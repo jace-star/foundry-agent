@@ -1,0 +1,50 @@
+{
+  "name": "foundry-agent",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "fix": "eslint . --fix",
+    "typecheck": "vue-tsc -b --pretty"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "catalog:",
+    "@vueuse/core": "catalog:",
+    "@vueuse/router": "catalog:",
+    "axios": "catalog:",
+    "element-plus": "catalog:",
+    "hoci": "catalog:",
+    "markstream-vue": "catalog:",
+    "md-editor-v3": "catalog:",
+    "nprogress": "catalog:",
+    "pinia": "catalog:",
+    "remend": "catalog:",
+    "uuid": "catalog:",
+    "vue": "catalog:",
+    "vue-json-pretty": "catalog:",
+    "vue-router": "catalog:"
+  },
+  "devDependencies": {
+    "@curev/eslint-config": "catalog:",
+    "@types/node": "catalog:",
+    "@types/nprogress": "catalog:",
+    "@unocss/preset-legacy-compat": "catalog:",
+    "@unocss/preset-web-fonts": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "@vue/tsconfig": "catalog:",
+    "eslint": "catalog:",
+    "less": "catalog:",
+    "typescript": "catalog:",
+    "unocss": "catalog:",
+    "unocss-preset-block": "catalog:",
+    "unocss-preset-palette": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-vue-layouts": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}

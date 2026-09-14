@@ -1,0 +1,27 @@
+@color-bg: #04264A;
+@color-primary: #1A4676;
+@color-secondary: #3D8BB9;
+
+:root {
+	--color-bg: @color-bg;
+	--color-primary: @color-primary;
+	--color-secondary: @color-secondary;
+}
+
+.n-popover {
+	//width: auto;
+	//max-width: 60%;
+	--uno: "text-sm"
+}
+
+:root {
+	/* 动态基准（基于屏幕宽度，8K下约为 1vw = 76.8px） */
+	font-size: calc(10px + 0.4vw);
+}
+
+/* 针对超大屏额外调整 */
+@media screen and (min-width: 7680px) {
+	:root {
+		font-size: calc(16px + 0.4vw); /* 减缓放大速度 */
+	}
+}

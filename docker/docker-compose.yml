@@ -1,0 +1,45 @@
+name: foundry-agent
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: foundry-agent-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-agent}
+      POSTGRES_USER: ${DB_USER:-agent}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-agent}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: foundry-agent-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  foundry-agent:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: foundry-agent:latest
+    container_name: foundry-agent
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${APP_PUBLIC_PORT:-9110}:9110"
+    depends_on:
+      - postgres
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  postgres_data:
+  redis_data:

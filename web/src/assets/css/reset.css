@@ -1,0 +1,49 @@
+* {
+	border-style: solid;
+	border-width: 0;
+	font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+}
+
+html, body, #app {
+	height: 100%;
+	width: 100%;
+}
+
+body {
+	font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+	font-size: 1rem;
+	letter-spacing: 1px;
+	line-height: 1.5rem;
+	overflow: hidden;
+	-webkit-font-smoothing: antialiased; /* Mac优化 */
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility; /* 提升可读性 */
+}
+
+table {
+	border-width: 1px;
+	border-collapse: collapse;
+}
+
+table th, table td {
+	border-width: 1px;
+	padding: 5px;
+}
+
+::-webkit-scrollbar {
+	/*滚动条整体样式*/
+	width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+	/*滚动条里面小方块*/
+	background-color: rgba(0, 0, 0, 0.25);
+	border-radius: 10px;
+	transition: 0.3s background-color;
+}
+
+::-webkit-scrollbar-track {
+	/*滚动条里面轨道*/
+	background: transparent;
+	border-radius: 10px;
+}

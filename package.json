@@ -1,0 +1,29 @@
+{
+  "name": "foundry-agent",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "scripts": {
+    "dev": "pnpm --filter foundry-agent dev",
+    "build:web": "pnpm --filter foundry-agent build",
+    "server": "uv run main.py",
+    "docker:config": "docker compose --env-file docker/.env -f docker/docker-compose.yml config",
+    "docker:build": "docker compose --env-file docker/.env -f docker/docker-compose.yml build",
+    "docker:up": "docker compose --env-file docker/.env -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose --env-file docker/.env -f docker/docker-compose.yml down",
+    "docker:logs": "docker compose --env-file docker/.env -f docker/docker-compose.yml logs -f foundry-agent",
+    "lint": "pnpm run lint:backend",
+    "lint:backend": "uv run ruff check main.py src",
+    "fix": "pnpm run fix:backend",
+    "fix:backend": "uv run ruff check main.py src --fix",
+    "db:migrate": "uv run alembic upgrade head"
+  }
+}
