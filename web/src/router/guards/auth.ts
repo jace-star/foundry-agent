@@ -1,7 +1,6 @@
 import type { Router } from "vue-router";
+import { AUTH_ENABLED } from "@/config";
 import { useUserStoreWithOut } from "@/store/user";
-
-const AUTH_ENABLED = import.meta.env.VITE_AUTH_ENABLED === "true";
 
 export function useAuthGuard(router: Router) {
   router.beforeEach(async (to) => {
