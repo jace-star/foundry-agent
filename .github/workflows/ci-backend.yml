@@ -1,0 +1,52 @@
+name: Backend CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - src/** # 后端源代码
+      - test/** # 测试代码（预留）
+      - main.py # 应用入口
+      - alembic.ini # alembic 配置
+      - pyproject.toml # 项目配置
+      - uv.lock # uv 锁定文件
+      - .python-version # Python 版本
+      - .github/workflows/ci-backend.yml # 当前文件
+
+concurrency:
+  group: ci-backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # 只读：检出代码
+  pull-requests: read # 只读：读取 PR 标题（WIP 判断）
+
+jobs:
+  ci:
+    if: ${{ !startsWith(github.event.pull_request.title, 'WIP:') }}
+    runs-on: ubuntu-latest
+    container: uv-runner:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/conda_pkgs_dir
+            ~/.cache/uv
+          key: uv-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-
+
+      - name: Install dependencies
+        shell: bash -l {0}
+        env:
+          UV_LINK_MODE: copy
+        run: |
+          uv sync --frozen --group dev
+
+      - name: Ruff check
+        shell: bash -l {0}
+        run: |
+          uv run ruff check main.py src
