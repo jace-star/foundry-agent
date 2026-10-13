@@ -58,8 +58,7 @@ src/
 ├── ext/                  ← 基础设施（不知道业务）
 │   ├── database.py       ← async engine + get_session()
 │   ├── storage.py        ← OpenDAL operator 工厂
-│   ├── llm.py
-│   └── observability.py
+│   └── llm.py
 ├── router/               ← 路由 + 业务逻辑（直接写 DB / OpenDAL）
 │   ├── user.py           ← 用户 CRUD + 登录（直调 session）
 │   ├── agent.py
