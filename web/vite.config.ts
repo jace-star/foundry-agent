@@ -4,7 +4,7 @@ import vue from "@vitejs/plugin-vue";
 import jsx from "@vitejs/plugin-vue-jsx";
 import UnoCSS from "unocss/vite";
 import { defineConfig, loadEnv } from "vite";
-import layouts from "vite-plugin-vue-layouts";
+import Layouts from "vite-plugin-vue-layouts-next";
 import router from "vue-router/vite";
 
 export default defineConfig(({ mode }) => {
@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
         exclude: ["**/_components/**"],
         dts: "typed-router.d.ts",
       }),
-      layouts(),
+      Layouts(),
       UnoCSS(),
     ],
   };

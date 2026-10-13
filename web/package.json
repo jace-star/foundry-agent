@@ -18,11 +18,12 @@
     "axios": "catalog:",
     "element-plus": "catalog:",
     "hoci": "catalog:",
+    "katex": "catalog:",
     "markstream-vue": "catalog:",
     "md-editor-v3": "catalog:",
     "nprogress": "catalog:",
     "pinia": "catalog:",
-    "remend": "catalog:",
+    "stream-diffs": "catalog:",
     "uuid": "catalog:",
     "vue": "catalog:",
     "vue-json-pretty": "catalog:",
@@ -44,7 +45,7 @@
     "unocss-preset-block": "catalog:",
     "unocss-preset-palette": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-vue-layouts": "catalog:",
+    "vite-plugin-vue-layouts-next": "catalog:",
     "vue-tsc": "catalog:"
   }
 }

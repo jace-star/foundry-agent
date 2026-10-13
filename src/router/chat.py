@@ -381,7 +381,7 @@ async def _load_mcp_tools(tool_servers: list[str]) -> list:
 
     try:
         client = MultiServerMCPClient(_connection_map(servers))
-        return client.get_tools()
+        return await client.get_tools()
     except Exception:
         logger.opt(exception=True).warning("加载 MCP 工具失败，LLM 将无 MCP 工具可用")
         return []

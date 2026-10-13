@@ -1,42 +1,26 @@
 <script lang="ts" setup>
-import { MarkdownRender } from "markstream-vue";
-import remend from "remend";
-import { ref, watch } from "vue";
+import MarkdownRender from "markstream-vue";
+import { computed } from "vue";
 import "markstream-vue/index.css";
 
 const props = withDefaults(
   defineProps<{
     text: string;
+    /** 仍在加载/流式输出中；未传 final 时用 !loading 推断 */
     loading?: boolean;
-    breaks?: boolean;
+    /** 流是否结束；传给 markstream-vue 的 final，避免未闭合语法卡住 */
+    final?: boolean;
     contentClass?: string;
-    mode?: "streaming" | "static";
   }>(),
   {
     loading: false,
-    breaks: false,
+    final: undefined,
     contentClass: "",
-    mode: "streaming",
   },
 );
 
-const processedText = ref("");
-const lastProcessedText = ref("");
-
-// 使用 remend 预处理不完整的 Markdown 语法
-watch(
-  () => props.text,
-  (newText) => {
-    // 避免重复处理相同的文本
-    if (newText === lastProcessedText.value) {
-      return;
-    }
-
-    lastProcessedText.value = newText;
-    // 使用 remend 处理不完整的 Markdown 语法
-    processedText.value = newText ? remend(newText) : "";
-  },
-  { immediate: true },
+const isFinal = computed(() =>
+  props.final !== undefined ? props.final : !props.loading,
 );
 </script>
 
@@ -47,7 +31,9 @@ watch(
     :class="[contentClass, loading && !text ? 'inline-block' : '']"
   >
     <MarkdownRender
-      :content="processedText"
+      mode="chat"
+      :content="text"
+      :final="isFinal"
       :render-batch-size="16"
       :render-batch-delay="8"
       :max-live-nodes="0"
