@@ -7,7 +7,6 @@ from loguru import logger
 from sqlalchemy import select
 
 from src.config import BASE_DIR, get_settings
-from src.constants import _check_langfuse
 from src.core.auth.user import hash_password, verify_password
 from src.ext.database import close_database, get_session_context, init_database
 from src.handler.exception import register_exception_handlers
@@ -61,7 +60,6 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("ADMIN_ACCOUNT 或 ADMIN_PASSWORD 未配置，跳过管理员账号初始化")
 
-    _check_langfuse()
     try:
         yield
     finally:

@@ -100,17 +100,6 @@ class OpenAISettings(EnvSettings):
     )
 
 
-class LangfuseSettings(EnvSettings):
-    """Langfuse 追踪配置，留空时自动禁用追踪。"""
-
-    public_key: str = Field(default="", validation_alias="LANGFUSE_PUBLIC_KEY")
-    secret_key: str = Field(default="", validation_alias="LANGFUSE_SECRET_KEY")
-    host: str = Field(
-        default="https://cloud.langfuse.com",
-        validation_alias="LANGFUSE_HOST",
-    )
-
-
 class DatabaseSettings(EnvSettings):
     """数据库配置。
 
@@ -172,7 +161,6 @@ class Settings(BaseModel):
     app: AppSettings
     storage: StorageSettings
     openai: OpenAISettings
-    langfuse: LangfuseSettings
     database: DatabaseSettings
     redis: RedisSettings
     auth: AuthSettings
@@ -188,10 +176,6 @@ def load_storage_settings() -> StorageSettings:
 
 def load_openai_settings() -> OpenAISettings:
     return OpenAISettings()
-
-
-def load_langfuse_settings() -> LangfuseSettings:
-    return LangfuseSettings()
 
 
 def load_database_settings() -> DatabaseSettings:
@@ -213,7 +197,6 @@ def get_settings() -> Settings:
         app=load_app_settings(),
         storage=load_storage_settings(),
         openai=load_openai_settings(),
-        langfuse=load_langfuse_settings(),
         database=load_database_settings(),
         redis=load_redis_settings(),
         auth=load_auth_settings(),

@@ -4,7 +4,6 @@ FastAPI 后端服务，当前保留 AI Agent 相关基础能力：
 
 - `langchain` / `langchain-openai`：OpenAI-compatible 模型调用
 - `langgraph`：有状态多步 Agent 编排
-- `langfuse`：LLM 追踪客户端初始化
 - `opendal`：统一对象存储
 - `fastapi`：HTTP API
 - `loguru`：日志
@@ -63,4 +62,4 @@ MCP server 配置通过 OpenDAL 持久化到对象存储。
 
 ## 环境变量
 
-参考 `.env.example`。Langfuse 的 `LANGFUSE_PUBLIC_KEY` 和 `LANGFUSE_SECRET_KEY` 留空时不会启用追踪。
+参考 `.env.example`。

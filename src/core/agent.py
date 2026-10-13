@@ -18,10 +18,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.graph.state import CompiledStateGraph
 
-from langfuse import observe, propagate_attributes
-
 from src.ext.llm import get_llm
-from src.ext.observability import get_langfuse_handler
 from src.models.skill import SkillConfig
 from src.utils.prompt import build_context_prompt
 
@@ -373,7 +370,6 @@ async def _build_initial_state(
     return state, active_names
 
 
-@observe(name="agent-hub", capture_input=True, capture_output=True)
 async def run_agent(
     system_prompt: str,
     skills: list[SkillConfig],
@@ -384,35 +380,22 @@ async def run_agent(
     conversation_id: str | None = None,
 ) -> str:
     """运行 agent，返回最终回复文本。"""
-    with propagate_attributes(
-        metadata={
-            "agent_key": agent_key,
-            "skills": ",".join(s.name for s in skills),
-        },
-        tags=["agent", agent_key] if agent_key else ["agent"],
-    ):
-        state, _active_names = await _build_initial_state(
-            system_prompt, skills, tools, user_message,
-            history_messages=history_messages,
-        )
+    state, _active_names = await _build_initial_state(
+        system_prompt, skills, tools, user_message,
+        history_messages=history_messages,
+    )
 
-        graph = build_agent_graph()
+    graph = build_agent_graph()
+    result = await graph.ainvoke(state)
 
-        # Langfuse CallbackHandler 自动追踪 LLM 调用和工具执行
-        handler = get_langfuse_handler()
-        config = {"callbacks": [handler]} if handler else {}
+    # 提取最后一条 AI 消息
+    for msg in reversed(result["messages"]):
+        if isinstance(msg, AIMessage) and msg.content:
+            return msg.content
 
-        result = await graph.ainvoke(state, config=config)
-
-        # 提取最后一条 AI 消息
-        for msg in reversed(result["messages"]):
-            if isinstance(msg, AIMessage) and msg.content:
-                return msg.content
-
-        return ""
+    return ""
 
 
-@observe(name="agent-hub", capture_input=True, capture_output=True)
 async def stream_agent(
     system_prompt: str,
     skills: list[SkillConfig],
@@ -438,81 +421,72 @@ async def stream_agent(
                 logger.opt(exception=True).warning("event_callback 执行失败")
         return event
 
-    with propagate_attributes(
-        metadata={
-            "agent_key": agent_key,
-            "skills": ",".join(s.name for s in skills),
-        },
-        tags=["agent", agent_key] if agent_key else ["agent"],
+    msg_start: dict = {"event": "message_start"}
+    if conversation_id:
+        msg_start["conversation_id"] = conversation_id
+    yield await _emit(msg_start)
+
+    # ── 预处理：技能选择（仅在有技能时才 emit 事件） ──
+    if skills:
+        yield await _emit({
+            "event": "tool_start",
+            "name": "select_skill",
+            "input": {"question": user_message},
+        })
+
+    state, active_names = await _build_initial_state(
+        system_prompt, skills, tools, user_message,
+        history_messages=history_messages,
+    )
+
+    if skills:
+        yield await _emit({
+            "event": "tool_end",
+            "name": "select_skill",
+            "output": {"skills": active_names},
+        })
+
+    # ── Graph 阶段：LLM ↔ 工具循环 ──
+
+    graph = build_agent_graph()
+
+    # 跟踪已 emit 的 tool_start，避免 tool_call chunk 重复触发
+    emitted_tool_starts: set[str] = set()
+
+    async for mode, data in graph.astream(
+        state, stream_mode=["messages", "updates"],
     ):
-        msg_start: dict = {"event": "message_start"}
-        if conversation_id:
-            msg_start["conversation_id"] = conversation_id
-        yield await _emit(msg_start)
+        if mode == "messages":
+            msg, _metadata = data
+            if not isinstance(msg, AIMessageChunk):
+                continue
 
-        # ── 预处理：技能选择（仅在有技能时才 emit 事件） ──
-        if skills:
-            yield await _emit({
-                "event": "tool_start",
-                "name": "select_skill",
-                "input": {"question": user_message},
-            })
+            text = _extract_text(msg.content)
+            if text:
+                yield await _emit({"event": "message", "content": text})
 
-        state, active_names = await _build_initial_state(
-            system_prompt, skills, tools, user_message,
-            history_messages=history_messages,
-        )
-
-        if skills:
-            yield await _emit({
-                "event": "tool_end",
-                "name": "select_skill",
-                "output": {"skills": active_names},
-            })
-
-        # ── Graph 阶段：LLM ↔ 工具循环 ──
-
-        graph = build_agent_graph()
-        handler = get_langfuse_handler()
-        config = {"callbacks": [handler]} if handler else {}
-
-        # 跟踪已 emit 的 tool_start，避免 tool_call chunk 重复触发
-        emitted_tool_starts: set[str] = set()
-
-        async for mode, data in graph.astream(
-            state, stream_mode=["messages", "updates"], config=config,
-        ):
-            if mode == "messages":
-                msg, _metadata = data
-                if not isinstance(msg, AIMessageChunk):
-                    continue
-
-                text = _extract_text(msg.content)
-                if text:
-                    yield await _emit({"event": "message", "content": text})
-
-                if msg.tool_calls:
-                    for tc in msg.tool_calls:
-                        tc_id = tc.get("id", "")
-                        if tc.get("name") and tc_id and tc_id not in emitted_tool_starts:
-                            emitted_tool_starts.add(tc_id)
-                            yield await _emit({
-                                "event": "tool_start",
-                                "name": tc["name"],
-                                "input": tc.get("args", {}),
-                            })
-
-            elif mode == "updates":
-                tool_update = data.get("call_tool") if isinstance(data, dict) else None
-                if not isinstance(tool_update, dict):
-                    continue
-
-                for msg in tool_update.get("messages", []):
-                    if isinstance(msg, ToolMessage):
+            if msg.tool_calls:
+                for tc in msg.tool_calls:
+                    tc_id = tc.get("id", "")
+                    if tc.get("name") and tc_id and tc_id not in emitted_tool_starts:
+                        emitted_tool_starts.add(tc_id)
                         yield await _emit({
-                            "event": "tool_end",
-                            "name": msg.name,
-                            "output": msg.content,
+                            "event": "tool_start",
+                            "name": tc["name"],
+                            "input": tc.get("args", {}),
                         })
 
-        yield await _emit({"event": "message_end"})
+        elif mode == "updates":
+            tool_update = data.get("call_tool") if isinstance(data, dict) else None
+            if not isinstance(tool_update, dict):
+                continue
+
+            for msg in tool_update.get("messages", []):
+                if isinstance(msg, ToolMessage):
+                    yield await _emit({
+                        "event": "tool_end",
+                        "name": msg.name,
+                        "output": msg.content,
+                    })
+
+    yield await _emit({"event": "message_end"})
