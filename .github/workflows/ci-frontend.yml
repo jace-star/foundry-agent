@@ -34,7 +34,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # ESLint 10 / Object.groupBy 需要 Node 21+；与本地及 docker/Dockerfile(node:24) 对齐
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
