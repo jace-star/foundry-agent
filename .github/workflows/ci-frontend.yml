@@ -1,0 +1,51 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - web/** # 前端源代码与配置
+      - package.json # 根 workspace 配置
+      - pnpm-lock.yaml # pnpm 锁定文件
+      - pnpm-workspace.yaml # pnpm workspace
+      - .github/workflows/ci-frontend.yml # 当前文件
+
+concurrency:
+  group: ci-frontend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # 只读：检出代码
+  pull-requests: read # 只读：读取 PR 标题（WIP 判断）
+
+jobs:
+  ci:
+    if: ${{ !startsWith(github.event.pull_request.title, 'WIP:') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # ESLint 10 / Object.groupBy 需要 Node 21+；与本地及 docker/Dockerfile(node:24) 对齐
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm --filter foundry-agent lint
+
+      - name: Typecheck
+        run: pnpm --filter foundry-agent typecheck
+
+      - name: Build
+        run: pnpm build:web

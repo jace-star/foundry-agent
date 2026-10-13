@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - src/** # 后端源代码
+      - test/** # 测试代码（预留）
+      - main.py # 应用入口
+      - alembic.ini # alembic 配置
+      - pyproject.toml # 项目配置
+      - uv.lock # uv 锁定文件
+      - .python-version # Python 版本
+      - .github/workflows/ci-backend.yml # 当前文件
+
+concurrency:
+  group: ci-backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # 只读：检出代码
+  pull-requests: read # 只读：读取 PR 标题（WIP 判断）
+
+jobs:
+  ci:
+    if: ${{ !startsWith(github.event.pull_request.title, 'WIP:') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version-file: .python-version
+          enable-cache: true
+
+      - name: Install dependencies
+        env:
+          UV_LINK_MODE: copy
+        run: uv sync --frozen --group dev
+
+      - name: Ruff check
+        run: uv run ruff check main.py src
