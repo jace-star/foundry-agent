@@ -52,8 +52,10 @@ lerna-debug.log*
 tmp/
 temp/
 data/
-test/
-docs/
+
+# Local tool caches / indexes
+.omc/**
+.codegraph/**
 
 # Editor / OS
 .vscode/*
