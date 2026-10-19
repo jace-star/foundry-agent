@@ -34,6 +34,6 @@ export function resetRef<T>(initValue: MaybeRefOrGetter<T>): ResetRef<T> {
     },
     get raw() {
       return fn();
-    }
-  });
+    },
+  }) as ResetRef<T>;
 }

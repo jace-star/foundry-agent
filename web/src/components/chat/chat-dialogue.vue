@@ -219,7 +219,7 @@ onUnmounted(() => {
           :title="part.isCompleted ? '思考结束' : '思考中'"
           class="bg-blue-50 w-full mb-4 rounded-xl py-3 px-4 border border-blue-200 shadow-sm"
         >
-          <Markdown :text="part.content" :loading="false" />
+          <Markdown :text="part.content" :final="!!part.isCompleted" />
         </Collapse>
       </template>
 
@@ -259,7 +259,7 @@ onUnmounted(() => {
       <!-- 回答内容 -->
       <div v-if="answerPart && answerPart.content">
         <div class="bg-white rounded-2xl px-3 py-2 mb-1 shadow-sm border border-slate-200">
-          <Markdown :text="answerPart.content" :loading="false" />
+          <Markdown :text="answerPart.content" :final="isCompleted" />
         </div>
         <div class="mb-4 px-1 flex items-center gap-0">
           <ElButton
