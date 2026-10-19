@@ -3,7 +3,7 @@ import vue from "@vitejs/plugin-vue";
 import jsx from "@vitejs/plugin-vue-jsx";
 import UnoCSS from "unocss/vite";
 import { defineConfig } from "vite";
-import layouts from "vite-plugin-vue-layouts";
+import layouts from "vite-plugin-vue-layouts-next";
 import router from "vue-router/vite";
 
 const backendTarget = "http://localhost:9110";
